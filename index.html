@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Raidsaw Jigsaw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=16" />
+</head>
+<body>
+  <header id="topbar">
+    <img id="logo" src="Design/logo-cropped.png" alt="Raidsaw Jigsaw" />
+    <div class="controls">
+      <label>Pieces
+        <input type="number" id="pieceCount" min="30" max="400" step="10" value="50" />
+      </label>
+      <button id="newGameBtn" class="pill-btn">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        New Puzzle
+      </button>
+      <button id="shuffleBtn" class="pill-btn">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 3 21 3 21 8"></polyline>
+          <line x1="4" y1="20" x2="21" y2="3"></line>
+          <polyline points="21 16 21 21 16 21"></polyline>
+          <line x1="15" y1="15" x2="21" y2="21"></line>
+          <line x1="4" y1="4" x2="9" y2="9"></line>
+        </svg>
+        Shuffle Remaining
+      </button>
+      <button id="leaderboardBtn" class="pill-btn">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="7"></circle>
+          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+        </svg>
+        Leaderboard
+      </button>
+      <label class="chk"><input type="checkbox" id="showGuide" checked /> Guide outline</label>
+      <label class="chk"><input type="checkbox" id="showRef" checked /> Reference image</label>
+      <span id="progressText">0 / 0 placed</span>
+      <span id="timerText">00:00</span>
+    </div>
+  </header>
+
+  <div id="stage">
+    <main id="playfieldWrap">
+      <div id="playfieldSizer">
+        <div id="playfield">
+          <div id="board"><canvas id="boardCanvas"></canvas></div>
+          <div id="piecesLayer"></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="refPanel">
+      <canvas id="refCanvas"></canvas>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <div id="introOverlay" class="modal-overlay">
+    <div class="completeBox glassBox">
+      <h2>How to Play</h2>
+      <p><strong>Left-click</strong> and drag &mdash; pick up and connect jigsaw pieces.</p>
+      <p><strong>Right-click</strong> and drag &mdash; pan around the table to search for scattered pieces.</p>
+      <label class="nameLabel" for="playerNameInput">Your name</label>
+      <input type="text" id="playerNameInput" class="nameInput" maxlength="20" placeholder="Enter your name" autocomplete="off" />
+      <button id="introOkBtn" class="pill-btn">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        Start Playing
+      </button>
+    </div>
+  </div>
+
+  <div id="completeOverlay" class="modal-overlay hidden">
+    <div class="completeBox">
+      <h2>Puzzle complete!</h2>
+      <p id="completeStats"></p>
+      <p id="completeRank"></p>
+      <div class="completeBtnRow">
+        <button id="playAgainBtn">Play Again</button>
+        <button id="viewLeaderboardBtn">View Leaderboard</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="leaderboardOverlay" class="modal-overlay hidden">
+    <div class="completeBox leaderboardBox glassBox">
+      <h2>Leaderboard</h2>
+      <ol id="leaderboardList" class="leaderboard-list"></ol>
+      <button id="leaderboardCloseBtn" class="pill-btn">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script src="puzzle.js?v=10"></script>
+</body>
+</html>

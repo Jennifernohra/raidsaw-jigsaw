@@ -1,0 +1,13 @@
+# Unused source/raw assets not loaded by the site
+Design/jigsaw-raidsaw-logo.psd
+Design/background.png
+Design/raidsaw-jigsaw - logo.png
+Design/ammo.rifle.hv_512.png
+
+# Puzzle photos not referenced in puzzle.js's PUZZLE_IMAGES list
+Images/*
+!Images/apr2026_armoured_ladder_hatch_1_4K.jpg
+!Images/canbe_backpacks_launch_01.jpg
+!Images/oct2026_plaguedoctor_dlc_hero_03_4k.jpg
+!Images/rust_lr300_spacedlc_1080_3_jpg.jpg
+!Images/rust_mortar_1_4k.jpg
