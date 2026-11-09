@@ -234,11 +234,6 @@
   let lastMouseY = window.innerHeight / 2;
   const TOAST_CURSOR_OFFSET = 18;
 
-  // Every few pieces placed on the board, celebrate with the same toast
-  // popup used for the edge-piece quip.
-  const DAYUM_INTERVAL = 3;
-  let boardPlacementCount = 0;
-
   function isEdgePiece(piece) {
     return piece.r === 0 || piece.c === 0 || piece.r === gridRows - 1 || piece.c === gridCols - 1;
   }
@@ -258,16 +253,10 @@
     if (toastVisible) positionToastNearCursor();
   });
 
-  function showToast(message, opts = {}) {
+  function showToast(message) {
     clearTimeout(toastHideTimer);
     el.toast.textContent = message;
     positionToastNearCursor();
-    el.toast.classList.toggle('toast-big', !!opts.big);
-    el.toast.classList.remove('pop-in');
-    if (opts.big) {
-      void el.toast.offsetWidth; // restart the pop-in animation if it's already playing
-      el.toast.classList.add('pop-in');
-    }
     el.toast.classList.remove('hidden');
     toastVisible = true;
     toastHideTimer = setTimeout(() => {
@@ -289,11 +278,6 @@
       } else {
         consecutiveEdgeStreak = 0;
       }
-    }
-
-    boardPlacementCount++;
-    if (boardPlacementCount % DAYUM_INTERVAL === 0) {
-      showToast('DAYUMMM!!!', { big: true });
     }
 
     noteConnectionStreak(piece);
@@ -618,7 +602,6 @@
     consecutiveEdgeStreak = 0;
     edgeNoticeShown = false;
     nonEdgeStreak = 0;
-    boardPlacementCount = 0;
     clearTimeout(toastHideTimer);
     el.toast.classList.add('hidden');
     toastVisible = false;
