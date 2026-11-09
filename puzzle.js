@@ -46,7 +46,6 @@
     leaderboardList: document.getElementById('leaderboardList'),
     leaderboardCloseBtn: document.getElementById('leaderboardCloseBtn'),
     toast: document.getElementById('toast'),
-    dayumPopup: document.getElementById('dayumPopup'),
   };
 
   let IMG_W = 1600;
@@ -235,25 +234,10 @@
   let lastMouseY = window.innerHeight / 2;
   const TOAST_CURSOR_OFFSET = 18;
 
-  // Every few pieces placed on the board, celebrate with a big "DAYUMMMMM!"
-  // that bursts outward from wherever the cursor is.
+  // Every few pieces placed on the board, celebrate with the same toast
+  // popup used for the edge-piece quip.
   const DAYUM_INTERVAL = 3;
   let boardPlacementCount = 0;
-  let dayumHideTimer = null;
-
-  function showDayumPopup() {
-    const originX = ((lastMouseX - window.innerWidth * 0.25) / (window.innerWidth * 0.5)) * 100;
-    const originY = ((lastMouseY - window.innerHeight * 0.25) / (window.innerHeight * 0.5)) * 100;
-    el.dayumPopup.style.setProperty('--origin-x', originX + '%');
-    el.dayumPopup.style.setProperty('--origin-y', originY + '%');
-    el.dayumPopup.classList.remove('pop');
-    void el.dayumPopup.offsetWidth; // restart the animation if it's already playing
-    el.dayumPopup.classList.add('pop');
-    clearTimeout(dayumHideTimer);
-    dayumHideTimer = setTimeout(() => {
-      el.dayumPopup.classList.remove('pop');
-    }, 1600);
-  }
 
   function isEdgePiece(piece) {
     return piece.r === 0 || piece.c === 0 || piece.r === gridRows - 1 || piece.c === gridCols - 1;
@@ -303,7 +287,7 @@
 
     boardPlacementCount++;
     if (boardPlacementCount % DAYUM_INTERVAL === 0) {
-      showDayumPopup();
+      showToast('DAYUMMM!!!');
     }
 
     noteConnectionStreak(piece);
@@ -632,8 +616,6 @@
     clearTimeout(toastHideTimer);
     el.toast.classList.add('hidden');
     toastVisible = false;
-    clearTimeout(dayumHideTimer);
-    el.dayumPopup.classList.remove('pop');
     el.completeOverlay.classList.add('hidden');
     if (timerHandle) clearInterval(timerHandle);
     timerHandle = null;
