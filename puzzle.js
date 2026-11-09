@@ -258,10 +258,16 @@
     if (toastVisible) positionToastNearCursor();
   });
 
-  function showToast(message) {
+  function showToast(message, opts = {}) {
     clearTimeout(toastHideTimer);
     el.toast.textContent = message;
     positionToastNearCursor();
+    el.toast.classList.toggle('toast-big', !!opts.big);
+    el.toast.classList.remove('pop-in');
+    if (opts.big) {
+      void el.toast.offsetWidth; // restart the pop-in animation if it's already playing
+      el.toast.classList.add('pop-in');
+    }
     el.toast.classList.remove('hidden');
     toastVisible = true;
     toastHideTimer = setTimeout(() => {
@@ -287,7 +293,7 @@
 
     boardPlacementCount++;
     if (boardPlacementCount % DAYUM_INTERVAL === 0) {
-      showToast('DAYUMMM!!!');
+      showToast('DAYUMMM!!!', { big: true });
     }
 
     noteConnectionStreak(piece);
