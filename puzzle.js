@@ -222,12 +222,10 @@
     openLeaderboard(lastFinishedEntry);
   });
 
-  // Edge-piece "challenge" quip: tracks whether each of the last several
-  // placements was a border piece, and pops a toast if the player's been
-  // obviously knocking out the edges first.
-  const EDGE_STREAK_WINDOW = 10;
+  // Edge-piece "challenge" quip: pops a toast if the player's placed a run
+  // of border pieces back to back, with no middle piece breaking it up.
   const EDGE_STREAK_THRESHOLD = 8;
-  let placementHistory = [];
+  let consecutiveEdgeStreak = 0;
   let edgeNoticeShown = false;
   let nonEdgeStreak = 0;
   let toastHideTimer = null;
@@ -271,14 +269,14 @@
     const edge = isEdgePiece(piece);
 
     if (!edgeNoticeShown) {
-      placementHistory.push(edge);
-      if (placementHistory.length > EDGE_STREAK_WINDOW) placementHistory.shift();
-      if (placementHistory.length === EDGE_STREAK_WINDOW) {
-        const edgeCount = placementHistory.filter(Boolean).length;
-        if (edgeCount >= EDGE_STREAK_THRESHOLD) {
+      if (edge) {
+        consecutiveEdgeStreak++;
+        if (consecutiveEdgeStreak >= EDGE_STREAK_THRESHOLD) {
           edgeNoticeShown = true;
           showToast('Doing all the edge pieces I see, thought you liked a challenge...');
         }
+      } else {
+        consecutiveEdgeStreak = 0;
       }
     }
 
@@ -601,7 +599,7 @@
     pieceGrid = [];
     placedCount = 0;
     totalCount = 0;
-    placementHistory = [];
+    consecutiveEdgeStreak = 0;
     edgeNoticeShown = false;
     nonEdgeStreak = 0;
     clearTimeout(toastHideTimer);
