@@ -135,25 +135,47 @@
   let loading = false;
 
   // ---------------------------------------------------------------------
-  // Player name + fastest-time leaderboard (persisted in localStorage —
-  // there's no server, so "global" here means "this browser").
-  // ---------------------------------------------------------------------
+  // Player name (persisted locally, just to prefill the field next visit) +
+  // a fastest-time leaderboard shared by everyone, stored in a jsonbin.io
+  // bin — there's no server of our own, so this is the closest thing to one.
   const PLAYER_NAME_KEY = 'raidsawJigsawPlayerName';
-  const LEADERBOARD_KEY = 'raidsawJigsawLeaderboard';
   const MAX_LEADERBOARD_ENTRIES = 50;
   const LEADERBOARD_DISPLAY_COUNT = 10;
+  const JSONBIN_BIN_ID = '6af2888bac6210605a7bae2a';
+  // Paste your jsonbin.io Master Key below, replacing the placeholder.
+  const JSONBIN_MASTER_KEY = 'PASTE_YOUR_JSONBIN_MASTER_KEY_HERE';
+  const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
   let playerName = localStorage.getItem(PLAYER_NAME_KEY) || '';
   el.playerNameInput.value = playerName;
 
-  function loadLeaderboard() {
+  // Returns the shared entries list, or null if the fetch itself failed
+  // (so callers can tell "nobody's finished yet" apart from "couldn't load").
+  async function fetchLeaderboard() {
     try {
-      const raw = localStorage.getItem(LEADERBOARD_KEY);
-      const list = raw ? JSON.parse(raw) : [];
-      return Array.isArray(list) ? list : [];
+      const res = await fetch(JSONBIN_URL + '/latest', {
+        headers: { 'X-Master-Key': JSONBIN_MASTER_KEY },
+      });
+      if (!res.ok) throw new Error('jsonbin GET failed: ' + res.status);
+      const data = await res.json();
+      const list = data && data.record && Array.isArray(data.record.entries) ? data.record.entries : [];
+      return list;
     } catch (e) {
-      return [];
+      console.warn('Could not load the shared leaderboard.', e);
+      return null;
     }
+  }
+
+  async function saveLeaderboard(list) {
+    const res = await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_MASTER_KEY,
+      },
+      body: JSON.stringify({ entries: list }),
+    });
+    if (!res.ok) throw new Error('jsonbin PUT failed: ' + res.status);
   }
 
   function formatTime(seconds) {
@@ -162,28 +184,44 @@
     return `${mm}:${ss}`;
   }
 
-  // Adds a finished run to the leaderboard, keeping it sorted fastest-first,
-  // and returns the 1-based rank the new entry landed at.
-  function recordLeaderboardEntry(entry) {
-    const list = loadLeaderboard();
+  // Adds a finished run to the shared leaderboard, keeping it sorted
+  // fastest-first, and returns the 1-based rank the new entry landed at.
+  async function recordLeaderboardEntry(entry) {
+    const list = (await fetchLeaderboard()) || [];
     list.push(entry);
     list.sort((a, b) => a.timeSeconds - b.timeSeconds);
     if (list.length > MAX_LEADERBOARD_ENTRIES) list.length = MAX_LEADERBOARD_ENTRIES;
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
+    await saveLeaderboard(list);
     return list.indexOf(entry) + 1;
   }
 
-  function renderLeaderboard(highlightEntry) {
-    const list = loadLeaderboard().sort((a, b) => a.timeSeconds - b.timeSeconds);
+  async function renderLeaderboard(highlightEntry) {
     el.leaderboardList.innerHTML = '';
-    if (list.length === 0) {
+    const loading = document.createElement('li');
+    loading.className = 'leaderboard-empty';
+    loading.textContent = 'Loading leaderboard…';
+    el.leaderboardList.appendChild(loading);
+
+    const list = await fetchLeaderboard();
+    el.leaderboardList.innerHTML = '';
+
+    if (list === null) {
+      const errorLi = document.createElement('li');
+      errorLi.className = 'leaderboard-empty';
+      errorLi.textContent = 'Could not load the leaderboard right now.';
+      el.leaderboardList.appendChild(errorLi);
+      return;
+    }
+
+    const sorted = list.slice().sort((a, b) => a.timeSeconds - b.timeSeconds);
+    if (sorted.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'leaderboard-empty';
       empty.textContent = 'No finished puzzles yet — be the first!';
       el.leaderboardList.appendChild(empty);
       return;
     }
-    list.slice(0, LEADERBOARD_DISPLAY_COUNT).forEach((entry, i) => {
+    sorted.slice(0, LEADERBOARD_DISPLAY_COUNT).forEach((entry, i) => {
       const li = document.createElement('li');
       if (highlightEntry && entry.date === highlightEntry.date) li.classList.add('lb-mine');
       const rank = document.createElement('span');
@@ -207,8 +245,8 @@
   }
 
   function openLeaderboard(highlightEntry) {
-    renderLeaderboard(highlightEntry);
     el.leaderboardOverlay.classList.remove('hidden');
+    renderLeaderboard(highlightEntry);
   }
 
   let lastFinishedEntry = null;
@@ -825,20 +863,25 @@
     }
   }
 
-  function onComplete() {
+  async function onComplete() {
     if (timerHandle) clearInterval(timerHandle);
     const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
     const elapsed = el.timerText.textContent;
     el.completeStats.textContent = `${totalCount} pieces in ${elapsed}`;
+    el.completeRank.textContent = 'Saving to the leaderboard…';
+    el.completeOverlay.classList.remove('hidden');
 
     const entry = { name: playerName || 'Player', timeSeconds: elapsedSeconds, pieces: totalCount, date: Date.now() };
-    const rank = recordLeaderboardEntry(entry);
     lastFinishedEntry = entry;
-    el.completeRank.textContent = rank === 1
-      ? `New fastest time — #1 on the leaderboard!`
-      : `#${rank} fastest time on this leaderboard`;
-
-    el.completeOverlay.classList.remove('hidden');
+    try {
+      const rank = await recordLeaderboardEntry(entry);
+      el.completeRank.textContent = rank === 1
+        ? `New fastest time — #1 on the leaderboard!`
+        : `#${rank} fastest time on this leaderboard`;
+    } catch (e) {
+      console.warn('Could not save to the shared leaderboard.', e);
+      el.completeRank.textContent = 'Could not reach the leaderboard — try again later.';
+    }
   }
 
   // ---------------------------------------------------------------------
