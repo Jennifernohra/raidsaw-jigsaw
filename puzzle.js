@@ -143,7 +143,7 @@
   const LEADERBOARD_DISPLAY_COUNT = 10;
   const JSONBIN_BIN_ID = '6af2888bac6210605a7bae2a';
   // Paste your jsonbin.io Master Key below, replacing the placeholder.
-  const JSONBIN_MASTER_KEY = 'PASTE_YOUR_JSONBIN_MASTER_KEY_HERE';
+  const JSONBIN_MASTER_KEY = '$2a$10$/GBwle8BNd/J/yImTnIpSemEqST7iiITTNyaUjglF9fOcTZcBK62C';
   const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
   let playerName = localStorage.getItem(PLAYER_NAME_KEY) || '';
