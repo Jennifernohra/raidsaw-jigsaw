@@ -984,7 +984,6 @@
       }
       m.el.style.transform = `translate(${m.x}px, ${m.y}px) rotate(${dragInfo.tilt.toFixed(2)}deg)`;
     }
-    trySnapWhileDragging();
   }
 
   function endDrag() {
@@ -1010,8 +1009,8 @@
     dragInfo = null;
   }
 
-  // Checked continuously while a piece is held, so it snaps the moment it
-  // reaches its board slot or a matching neighbor — no need to let go first.
+  // Only checked once the mouse is released — a piece hovering over its
+  // board slot or a matching neighbor doesn't snap until you let go.
   function trySnapWhileDragging() {
     const { anchor, group } = dragInfo;
 
